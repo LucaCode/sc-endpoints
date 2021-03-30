@@ -18,6 +18,12 @@ export interface Receiver {
   handle: (socket: AGServerSocket, data: any) => any;
 }
 
+/**
+ * @description
+ * Registers receiver endpoint.
+ * The name will be parsed from the class name if you don't provide an explicit name.
+ * @param name 
+ */
 export default function RegisterReceiver(name?: string) {
   return (target: EndpointClass<Receiver>) => {
     const endpointName = name != null ? name : parseEndpointName(target);

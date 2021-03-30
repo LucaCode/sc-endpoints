@@ -19,6 +19,12 @@ export interface Procedure {
   handle: (socket: AGServerSocket, data: any, response: Response) => any;
 }
 
+/**
+ * @description
+ * Registers procedure endpoint.
+ * The name will be parsed from the class name if you don't provide an explicit name.
+ * @param name
+ */
 export default function RegisterProcedure(name?: string) {
   return (target: EndpointClass<Procedure>) => {
     const endpointName = name != null ? name : parseEndpointName(target);

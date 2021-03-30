@@ -10,7 +10,18 @@ import { addMiddleware } from "../Middleware";
 
 export type AuthTokenValidator = (token: Record<string,any> | null) => Promise<boolean> | boolean;
 
+/**
+ * @description
+ * Adds a custom auth token middleware to the middleware pipeline.
+ * @param func
+ */
 function AuthToken(func: AuthTokenValidator): (target: EndpointClass<any>) => void
+/**
+ * @description
+ * Adds a middleware to the middleware pipeline to 
+ * check the auth token by using the package: "forint". 
+ * @param func
+ */
 function AuthToken(query: ForintQuery): (target: EndpointClass<any>) => void
 function AuthToken(v: AuthTokenValidator | ForintQuery): (target: EndpointClass<any>) => void {
     return (target: EndpointClass<any>) => {

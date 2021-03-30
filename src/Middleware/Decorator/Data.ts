@@ -10,7 +10,18 @@ import { addMiddleware } from "../Middleware";
 
 export type DataValidator = (data: any) => boolean;
 
+/**
+ * @description
+ * Adds a custom data middleware to the middleware pipeline.
+ * @param func
+ */
 function Data(func: DataValidator): (target: EndpointClass<any>) => void
+/**
+ * @description
+ * Adds a middleware to the middleware pipeline to 
+ * validate the send data by using the package: "jsonschema". 
+ * @param func
+ */
 function Data(schema: Schema): (target: EndpointClass<any>) => void
 function Data(v: DataValidator | Schema): (target: EndpointClass<any>) => void {
     return (target: EndpointClass<any>) => {
