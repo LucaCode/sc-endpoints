@@ -6,7 +6,7 @@
     "lib": ["ES5"],
     "strict": true,
     "esModuleInterop": true,
-    //"skipLibCheck": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "outDir": "out"
