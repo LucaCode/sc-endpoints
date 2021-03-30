@@ -1,0 +1,34 @@
+{
+  "name": "sc-endpoints",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Module for creating socketcluster receivers and procedures by using classes and decorators.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "rm -rf dist/ && tsc -p ./",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LucaCode/sc-endpoints.git"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": {
+    "name": "Luca Scarignella",
+    "email": "lucacode1@gmail.com",
+    "url": "https://luca.scaringella.de"
+  },
+  "dependencies": {
+    "forint": "^0.2.1",
+    "jsonschema": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/socketcluster-server": "15.0.1",
+    "typescript": "^4.2.3"
+  }
+}
