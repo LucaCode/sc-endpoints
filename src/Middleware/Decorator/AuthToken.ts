@@ -12,6 +12,13 @@ export type AuthTokenValidator = (token: Record<string,any> | null) => Promise<b
 
 /**
  * @description
+ * Adds a middleware to the middleware pipeline to 
+ * check if an auth token exists.
+ * @param exists
+ */
+ function AuthToken(exists: boolean): (target: EndpointClass<any>) => void
+/**
+ * @description
  * Adds a custom auth token middleware to the middleware pipeline.
  * @param func
  */
@@ -22,10 +29,13 @@ function AuthToken(func: AuthTokenValidator): (target: EndpointClass<any>) => vo
  * check the auth token by using the package: "forint". 
  * @param func
  */
-function AuthToken(query: ForintQuery): (target: EndpointClass<any>) => void
-function AuthToken(v: AuthTokenValidator | ForintQuery): (target: EndpointClass<any>) => void {
+function AuthToken(query: ForintQuery<Record<string,any>>): (target: EndpointClass<any>) => void
+function AuthToken(v: AuthTokenValidator | boolean | ForintQuery<Record<string,any>>): 
+    (target: EndpointClass<any>) => void 
+{
     return (target: EndpointClass<any>) => {
-        const f = typeof v === 'function' ? v : forint(v);
+        const f = typeof v === 'function' ? v : (typeof v === 'boolean' ? 
+            (v ? t => t != null : t => t == null) : forint(v));
         addMiddleware(target,async (socket,_,res,next) => {
             if(!await f(socket.authToken)) res?.error(403, 'Access denied')
             else next();
