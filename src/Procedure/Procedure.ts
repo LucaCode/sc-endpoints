@@ -45,7 +45,7 @@ export default function RegisterProcedure(name?: string) {
         for await (request of socket.procedure(endpointName)) {
           const res = new Response(request);
           try {
-            await middlewarePipeline(socket, request.data, res);
+            if(!await middlewarePipeline(socket, request.data, res)) continue;
           } catch (err) {
             console.error(
               `Unexpected error in middleware pipeline of procedure: '${endpointName}' -> `,

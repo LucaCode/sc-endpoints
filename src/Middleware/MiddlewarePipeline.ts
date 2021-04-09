@@ -11,7 +11,7 @@ type MiddlewarePipelineFunc<R extends boolean> = (socket: AGServerSocket, data: 
     response: R extends true ? Response : undefined, next: () => void) => any
 
 export function createMiddlewarePipeline<R extends boolean>(funcs: MiddlewarePipelineFunc<R>[]): (socket: AGServerSocket, data: any,
-    response: R extends true ? Response : undefined) => Promise<void>
+    response: R extends true ? Response : undefined) => Promise<boolean>
 {
     if(funcs.length > 0) {
        return (socket,data,result) => {
@@ -19,9 +19,16 @@ export function createMiddlewarePipeline<R extends boolean>(funcs: MiddlewarePip
             let i = -1;
             const next = () => {
                 const func = funcs[++i];
-                if(!func) res();
+                if(!func) res(true);
+                const tmpI = i;
                 (async () => {
-                    try {await func(socket,data,result,next);}
+                    try {
+                        await func(socket,data,result,next);
+                        if(tmpI === i) {
+                            //next was not called
+                            res(false);
+                        }
+                    }
                     catch(e) {rej(e)}
                 })()
             }
@@ -29,5 +36,5 @@ export function createMiddlewarePipeline<R extends boolean>(funcs: MiddlewarePip
         })
        }
     }
-    else return async () => {};
+    else return async () => true;
 }

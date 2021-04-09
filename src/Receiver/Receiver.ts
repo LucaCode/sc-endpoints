@@ -41,7 +41,7 @@ export default function RegisterReceiver(name?: string) {
         let request: ScTransmitRequest;
         for await (request of socket.receiver(endpointName)) {
           try {
-            await middlewarePipeline(socket, request.data, undefined);
+            if(!await middlewarePipeline(socket, request.data, undefined)) continue;
           } catch (err) {
             console.error(
               `Unexpected error in middleware pipeline of receiver: '${endpointName}' -> `,
