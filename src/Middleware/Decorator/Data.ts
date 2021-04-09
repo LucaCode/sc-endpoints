@@ -26,8 +26,8 @@ function Data(schema: Schema): (target: EndpointClass<any>) => void
 function Data(v: DataValidator | Schema): (target: EndpointClass<any>) => void {
     return (target: EndpointClass<any>) => {
         const f = typeof v === 'function' ? v : (data: any) => validate(data,v).valid;
-        addMiddleware(target,async (socket,_,res,next) => {
-            if(!await f(socket.authToken)) res?.error(400,'Invalid data')
+        addMiddleware(target,async (_,data,res,next) => {
+            if(!await f(data)) res?.error(400,'Invalid data')
             else next();
         });
     }
