@@ -1,6 +1,6 @@
 {
   "name": "sc-endpoints",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "description": "Module for creating socketcluster receivers and procedures by using classes and decorators.",
   "main": "dist/index.js",
