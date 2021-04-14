@@ -22,11 +22,11 @@ export interface Receiver {
  * @description
  * Registers receiver endpoint.
  * The name will be parsed from the class name if you don't provide an explicit name.
- * @param name 
+ * @param options
  */
-export default function RegisterReceiver(name?: string) {
+export default function RegisterReceiver(options: {name?: string, async?: boolean}) {
   return (target: EndpointClass<Receiver>) => {
-    const endpointName = name != null ? name : parseEndpointName(target);
+    const endpointName = options.name != null ? options.name : parseEndpointName(target);
     if (target.registered)
       throw new Error(`The receiver: "${endpointName}" is already registered.`);
     target.registered = true;
@@ -36,26 +36,31 @@ export default function RegisterReceiver(name?: string) {
       target.middlewares ? [...target.middlewares].reverse() : []
     );
 
+    const process = async (request: ScTransmitRequest, socket: AGServerSocket) => {
+      try {
+        if(!await middlewarePipeline(socket, request.data, undefined)) return;
+      } catch (err) {
+        console.error(
+            `Unexpected error in middleware pipeline of receiver: '${endpointName}' -> `,
+            err
+        );
+      }
+      try {
+        await instance.handle(socket, request.data);
+      } catch (err) {
+        console.error(
+            `Unexpected error in handle of receiver: '${endpointName}' -> `,
+            err
+        );
+      }
+    }
+
     endpointAppliers.push((socket) => {
       (async () => {
         let request: ScTransmitRequest;
         for await (request of socket.receiver(endpointName)) {
-          try {
-            if(!await middlewarePipeline(socket, request.data, undefined)) continue;
-          } catch (err) {
-            console.error(
-              `Unexpected error in middleware pipeline of receiver: '${endpointName}' -> `,
-              err
-            );
-          }
-          try {
-            await instance.handle(socket, request.data);
-          } catch (err) {
-            console.error(
-              `Unexpected error in handle of receiver: '${endpointName}' -> `,
-              err
-            );
-          }
+          const promise = process(request,socket);
+          if(!options.async) await promise;
         }
       })();
     });

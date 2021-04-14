@@ -23,11 +23,11 @@ export interface Procedure {
  * @description
  * Registers procedure endpoint.
  * The name will be parsed from the class name if you don't provide an explicit name.
- * @param name
+ * @param options
  */
-export default function RegisterProcedure(name?: string) {
+export default function RegisterProcedure(options: {name?: string, async?: boolean}) {
   return (target: EndpointClass<Procedure>) => {
-    const endpointName = name != null ? name : parseEndpointName(target);
+    const endpointName = options.name != null ? options.name : parseEndpointName(target);
     if (target.registered)
       throw new Error(
         `The procedure: "${endpointName}" is already registered.`
@@ -39,27 +39,32 @@ export default function RegisterProcedure(name?: string) {
       target.middlewares ? [...target.middlewares].reverse() : []
     );
 
+    const process = async (request: ScInvokeRequest, socket: AGServerSocket) => {
+      const res = new Response(request);
+      try {
+        if(!await middlewarePipeline(socket, request.data, res)) return;
+      } catch (err) {
+        console.error(
+            `Unexpected error in middleware pipeline of procedure: '${endpointName}' -> `,
+            err
+        );
+      }
+      try {
+        await instance.handle(socket, request.data, res);
+      } catch (err) {
+        console.error(
+            `Unexpected error in handle of procedure: '${endpointName}' -> `,
+            err
+        );
+      }
+    }
+
     endpointAppliers.push((socket) => {
       (async () => {
         let request: ScInvokeRequest;
         for await (request of socket.procedure(endpointName)) {
-          const res = new Response(request);
-          try {
-            if(!await middlewarePipeline(socket, request.data, res)) continue;
-          } catch (err) {
-            console.error(
-              `Unexpected error in middleware pipeline of procedure: '${endpointName}' -> `,
-              err
-            );
-          }
-          try {
-            await instance.handle(socket, request.data, res);
-          } catch (err) {
-            console.error(
-              `Unexpected error in handle of procedure: '${endpointName}' -> `,
-              err
-            );
-          }
+          const promise = process(request,socket);
+          if(!options.async) await promise;
         }
       })();
     });
